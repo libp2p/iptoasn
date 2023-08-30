@@ -1,0 +1,37 @@
+name: Update data
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '*/45 * * * *' # https://crontab.guru/#*/45_*_*_*_*
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - env:
+          FILES: |
+            ip2asn-v4.tsv
+            ip2asn-v4-u32.tsv
+            ip2asn-v6.tsv
+            ip2asn-combined.tsv
+            ip2country-v4.tsv
+            ip2country-v4-u32.tsv
+            ip2country-v6.tsv
+        run: |
+          for file in $FILES; do
+            curl -sSfL "https://iptoasn.com/data/$file.gz" > data/$file.gz
+          done
+      - run: |
+          git config --global user.name "GitHub Actions"
+          git config --global user.email ""
+      - id: commit
+        run: |
+          git add data/*.gz
+          if ! git diff-index --quiet HEAD; then
+            git commit -m "Update data ($(date +'%Y-%m-%d %H:%M:%S'))"
+            git log -1 --pretty=format:%H | xargs -I {} echo "id={}" | tee -a $GITHUB_OUTPUT
+          fi
+      - if: steps.commit.outputs.id
+        run: git push
