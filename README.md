@@ -1,6 +1,6 @@
 # iptoasn
 
-Versioned https://iptoasn.com/ data.
+Versioned https://iptoasn.com/ data. The workflow that downloads the files and tries to update them in this repo runs every 45 minutes.
 
 ## Download Links
 
